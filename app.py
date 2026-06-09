@@ -13,6 +13,10 @@ PASSWORD = "admin123"
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
+if "users" not in st.session_state:
+    st.session_state.users = {
+        "admin": "admin123"
+    }
 def login():
 
     st.set_page_config(page_title="Login", layout="centered")
@@ -25,18 +29,59 @@ def login():
     </style>
     """, unsafe_allow_html=True)
 
-    st.title("🔐 Admin Login")
+    tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    # LOGIN
+    with tab1:
 
-    if st.button("Login"):
+        st.title("🔐 Admin Login")
 
-        if username == USERNAME and password == PASSWORD:
-            st.session_state.logged_in = True
-            st.rerun()
-        else:
-            st.error("Invalid username or password")
+        username = st.text_input("Username", key="login_user")
+        password = st.text_input("Password", type="password", key="login_pass")
+
+        if st.button("Login"):
+
+            if (
+                username in st.session_state.users and
+                st.session_state.users[username] == password
+            ):
+                st.session_state.logged_in = True
+                st.session_state.current_user = username
+                st.rerun()
+
+            else:
+                st.error("Invalid username or password")
+
+    # SIGNUP
+    with tab2:
+
+        st.title("📝 Create Account")
+
+        new_user = st.text_input("Choose Username")
+        new_pass = st.text_input(
+            "Choose Password",
+            type="password"
+        )
+
+        confirm_pass = st.text_input(
+            "Confirm Password",
+            type="password"
+        )
+
+        if st.button("Sign Up"):
+
+            if not new_user or not new_pass:
+                st.warning("Please fill all fields")
+
+            elif new_user in st.session_state.users:
+                st.error("Username already exists")
+
+            elif new_pass != confirm_pass:
+                st.error("Passwords do not match")
+
+            else:
+                st.session_state.users[new_user] = new_pass
+                st.success("Account created successfully! Please login.")
 
 
 if not st.session_state.logged_in:
